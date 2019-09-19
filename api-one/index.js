@@ -20,15 +20,15 @@ app.get('/', (req, res) => {
 })
 
 app.post('/', async (req, res) => {
-  console.log('post /');
+  //console.log('post /');
   try {
-    timer = 1234; //req.body.timer;
-    console.log('timer', timer)
+    timer = req.body.timer;
+    //console.log('timer', timer, new Date())
     await getTwoTimer(timer);
     console.log('post ok on api-two')
     res.sendStatus(200);
   } catch (error) {
-    console.log('error post', error)
+    console.log(new Date(), 'error post', JSON.stringify(error) || res.statusCode)
     res.sendStatus(500);
   }
 });

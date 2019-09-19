@@ -1,36 +1,33 @@
 const request = require('request');
 
-var falhas = 0;
-var cb = 0;
-var sucessos = 0;
+var countFalhas = 0;
+var countCircuitBreakerOpen = 0;
 
 module.exports = options => new Promise((resolve, reject) => {
-  console.log('falhas', falhas)
+  /*console.log('falhas', falhas)
   console.log('cb', cb)
-  console.log('sucessos', sucessos)
+  console.log('sucessos', sucessos)*/
 
-  if (cb === 10) {
-    console.log('cb = 10')
-    cb = 0;
-    falhas = 2;
+  if (countCircuitBreakerOpen === 10) {
+    console.log('cb = 10 - zerando contador - circuit breaker fechado')
+    countCircuitBreakerOpen = 0;
+    countFalhas--;
   }
 
-  if (falhas === 3) {
-    cb++;
-    return reject({ 'error' : 'cb' });
+  if (countFalhas === 3) {
+    countCircuitBreakerOpen++;
+    return reject({ 'error' : 'circuit breaker aberto' });
   }
-  options.timeout = 1000;
+  //options.timeout = 500;
   request(options, (err, httpResponse, body) => {
-    if (err) {
-      falhas++;
-      sucessos = 0;
-      console.log('falhas++', falhas)
+    if (err || httpResponse.statusCode === 500) {
+      countFalhas++;
+      console.log('falhas++', countFalhas)
       reject(err);
       return;
     }
-    sucessos++;
-    falhas = 0;
-    cb = 0;
+    countFalhas = 0;
+    countCircuitBreakerOpen = 0;
     resolve({
       httpResponse,
       body
